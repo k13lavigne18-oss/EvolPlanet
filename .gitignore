@@ -1,2 +1,9 @@
-target/
+/target
+**/*.rs.bk
+Cargo.lock
 .DS_Store
+
+# 重要なファイル
+credentials.txt
+game_data.db
+.env
