@@ -1,0 +1,20 @@
+[package]
+name = "evolution_game"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# dynamic_linking を有効化 (開発用)
+bevy = { version = "0.15", features = ["dynamic_linking"] }
+rand = "0.8"
+
+# PostgreSQL 関連 (同期処理用)
+postgres = "0.19"
+r2d2 = "0.8"
+r2d2_postgres = "0.18"
+
+# デプロイ時の最適化設定
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3

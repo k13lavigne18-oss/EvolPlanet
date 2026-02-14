@@ -1,0 +1,32 @@
+.
+├── Cargo.lock
+├── Cargo.toml
+├── Dockerfile
+├── assets
+│   ├── bot_dialogues.txt
+│   └── fonts
+│       ├── NotoEmoji-Bold.ttf
+│       └── NotoSansJP-Bold.ttf
+├── credentials.txt
+├── docker-compose.yml
+├── src
+│   ├── components.rs
+│   ├── constants.rs
+│   ├── database.rs
+│   ├── main.rs
+│   ├── map.rs
+│   ├── resources.rs
+│   └── systems
+│       ├── account.rs
+│       ├── bot.rs
+│       ├── camera.rs
+│       ├── input.rs
+│       ├── map_render.rs
+│       ├── mod.rs
+│       ├── movement.rs
+│       ├── startup.rs
+│       └── ui.rs
+├── tree.txt
+├── treefile.txt
+└── 設計思想.txt
+

@@ -1,0 +1,95 @@
+プロジェクト引き継ぎ資料：EvolPlanet
+
+1. プロジェクト概要
+    プロジェクト名: EvolPlanet
+    目的: Rust (Bevy engine) で開発された2Dゲームを、Dockerコンテナ化し、Oracle Cloud上で稼働させる。
+    最終形態: プレイヤーはスマホやPCのブラウザからアクセスし、ゲーム画面を操作する。
+
+2. 技術スタック & インフラ構成
+    言語/フレームワーク: Rust (Bevy 0.15系), PostgeSQL (DB)
+    デプロイ環境:
+        クラウド: Oracle Cloud Infrastructure (OCI) Always Free枠
+        マシン: Ampere A1 Compute (Arm64), 4 OCPU, 24GB RAM, 200GB Storage
+    OS: Canonical Ubuntu 24.04 aarch64
+        コンテナ構成 (Docker Compose):
+        game: Bevyアプリ + Xvfb (仮想ディスプレイ) + x11vnc + noVNC + Openbox (WM)
+        db: PostgreSQL 15-alpine
+        cloudflared: Cloudflare Tunnel (外部公開用)
+     レンダリング: GPUがない環境のため、llvmpipe (Mesa) によるソフトウェアレンダリングを強制 (LIBGL_ALWAYS_SOFTWARE=1, WGPU_BACKEND=vulkan).
+
+3. ゲーム設計・仕様（重要）
+    基本的な動き
+        マップ: グリッドベース（100万x100万）。
+        操作: 矢印キーで移動。
+        セーブ: 画面上の「SAVE」ボタンでDBに位置とユーザーデータを保存。
+        ボット (NPC) の挙動
+        状態: Wandering (徘徊) と Speaking (会話) の2状態。
+        反応範囲 (VOICE_RANGE):
+        プレイヤーとの距離が 縦横4マス以内（正方形判定）。
+        ※以前の円形判定（ユークリッド距離）は四隅の判定が甘いため廃止。
+    インタラクション:
+        範囲内に入るとボットは立ち止まり、吹き出しでランダムなセリフを表示。
+        範囲内にいる間は動かない。範囲外に出ると再び徘徊を始める。
+        コミュニケーション (絵文字/顔)
+            a キー: 「👍 (いいね)」を表示。一時的な感情表現なので、数秒で消える。aキーと👍の紐付けは変更できない。
+            s キー: 任意の絵文字を表示。ユーザーの「顔（表情）」としての扱い。もう一度入力されるまで永続的に表示。ゲームを進める中で様々な絵文字を取得できる。SAVEでsキーに登録した絵文字を保存できる。
+            d キー: 同上。SAVEでdキーに登録した絵文字を保存できる。
+
+4. 現在のステータス (2026/02/14時点)
+    ローカル開発 (Mac M4): cargo run でDB接続・起動ともに正常動作。
+    Dockerビルド: マルチステージビルドにより軽量化済み。.dockerignore で転送量を削減済み。
+    OCIデプロイ:
+        Phoenix (US West) リージョンのAD-3が満員でインスタンス作成待ち。
+        Stack機能を使って構成を保存済み。AD-1/AD-3への変更または時間をおいてのリトライ待ち。
+        ネットワーク設定（VCN/Subnet）は「Public Subnet」を作成し「Public IP」を自動付与する設定で完了。
+
+5. 開発・コーディングの絶対ルール
+    このプロジェクトにおける「私（ユーザー）」との約束事です。
+    フルコードの提示:
+        コードを修正する際は、「変更点だけ」ではなく、**「そのファイルの全コード」**を必ず提示すること。
+        「... (省略) ...」や「以前と同じ」は禁止。コピー＆ペーストで確実に動く状態を提供する。
+        インフラ設定（Oracle Cloudなど）の手順は、ボタンの位置、押す順序、設定値を省略せず、一から丁寧に教える。
+        基本的にはコードの提示のみでいいです。「これってどういうこと？」「なんでこうなったの？」といった質問や説明を求めない限り、余計なアウトプットはせず、フルコードの提示に専念してください。
+        関連するファイルやその行数が多いため、余計なアウトプットはせず、コードの提示に努めること
+    環境差異の吸収:
+        Mac (Local) と Linux (Docker/Cloud) の挙動の違い（ファイル名の _ と - の違いなど）を考慮した実装を行う。
+
+6. 開発コンセプト
+    「爆速処理」をコンセプトにしてます。
+    Rustの性能を最大限に活かし処理の効率化、最適化に努めること
+    こうした方がより良い、本質的　というものがあったら提案すること
+    M4 Macminiで開発しているので基本的にはローカルで進めます
+
+7. フォルダ階層
+.
+├── Cargo.lock
+├── Cargo.toml
+├── Dockerfile
+├── assets
+│   ├── bot_dialogues.txt
+│   └── fonts
+│       ├── NotoEmoji-Bold.ttf
+│       └── NotoSansJP-Bold.ttf
+├── credentials.txt
+├── docker-compose.yml
+├── src
+│   ├── components.rs
+│   ├── constants.rs
+│   ├── database.rs
+│   ├── main.rs
+│   ├── map.rs
+│   ├── resources.rs
+│   └── systems
+│       ├── account.rs
+│       ├── bot.rs
+│       ├── camera.rs
+│       ├── input.rs
+│       ├── map_render.rs
+│       ├── mod.rs
+│       ├── movement.rs
+│       ├── startup.rs
+│       └── ui.rs
+├── tree.txt
+├── treefile.txt
+└── 設計思想.txt
+

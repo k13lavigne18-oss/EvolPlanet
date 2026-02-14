@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 1. データベース
+  db:
+    image: postgres:15-alpine
+    container_name: evolution-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      # 【修正】ここをコメントアウト解除して有効化してください
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # 2. ゲーム本体 (画面配信サーバー)
+  game:
+    build: .
+    container_name: evolution-game
+    restart: always
+    ports:
+      - "8000:8080"
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  # 3. Cloudflare Tunnel (任意)
+  # tunnel:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: cloudflared
+  #   restart: always
+  #   command: tunnel run
+  #   environment:
+  #     - TUNNEL_TOKEN=...
+
+volumes:
+  db_data:

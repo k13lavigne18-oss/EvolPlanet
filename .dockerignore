@@ -1,0 +1,19 @@
+# Rustのビルド生成物（これが一番デカい！）
+target/
+
+# Gitの履歴データ
+.git/
+.gitignore
+
+# Mac/Windowsのシステムファイル
+.DS_Store
+Thumbs.db
+
+# VSCodeの設定など
+.vscode/
+.idea/
+
+# Docker関連ファイル自体もコンテナ内には不要
+Dockerfile
+docker-compose.yml
+README.md
